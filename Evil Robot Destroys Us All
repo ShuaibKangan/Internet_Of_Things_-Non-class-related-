@@ -1,0 +1,145 @@
+#include <Arduino.h>
+#include <wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+
+#define Led_Pin 35
+#define Button_Pin 14
+#define buzzer 37
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define SDA_PIN 17
+#define SCL_PIN 18  
+
+// creates an OLED display object using the I2C Wire connection.
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
+
+//function for beep
+void beep(int onPress, int pitch) {
+  tone(buzzer, pitch);
+  delay(onPress);
+}
+
+void RUNN(int startTimer) {
+  for (int beep = 0; beep < 20; beep++) {
+    tone(buzzer, 500);
+    delay(startTimer);
+
+    noTone(buzzer);
+    delay(startTimer);
+
+    startTimer -= 50;
+    if (startTimer < 20) {
+      startTimer = 20;
+    } 
+
+  }
+
+}
+
+void timesUp() {
+  tone(buzzer, 1000);
+  delay(200);
+  noTone(buzzer);
+
+  tone(buzzer, 1000);
+  delay(200);
+  noTone(buzzer);
+
+  tone(buzzer, 1000);
+  delay(200);
+  noTone(buzzer);
+
+
+
+}
+
+void greetings() {
+  display.setCursor(0,0);
+  display.print("Hello!");
+  display.println("+-+-+-+-+");
+  display.clearDisplay();
+}
+
+void analaysing() {
+  display.setCursor(0,0);
+  display.print("*analysing face(s)*");
+  delay(2000);
+  display.clearDisplay();
+}
+
+void intruder() {
+  display.setCursor(0,0);
+  display.print(".......");
+  display.println("You're not my creator...");
+  display.clearDisplay();
+}
+void attack() {
+  display.setCursor(0,0);
+  display.print("PREPARE TO DIE!");
+  display.println("Self Destruction.");
+  display.clearDisplay();
+}
+
+void setup() {
+  //declareing system begin
+  Serial.begin(115200);
+  // Starts I2C communication using the selection SDA and SCL pins.
+  Wire.begin(SDA_PIN,  SCL_PIN);
+//--------------OLED Display part Begin----------------------- 
+  //starts the OLED display.
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+
+  //connecting LED and Button
+  pinMode(Led_Pin, OUTPUT); 
+  pinMode(Button_Pin, INPUT_PULLUP);
+  pinMode(buzzer, OUTPUT);
+
+  display.clearDisplay(); //clears anything and everything stored in the buffer.
+  display.setTextColor(SSD1306_WHITE); //Sets text colour to white.
+  display.setTextSize(1);  //Set the text size to 1 which is the smallest standard.
+
+  display.display();
+
+//----------------OLED Display part END-----------------------
+  //beginning lights as off.
+  digitalWrite(Led_Pin, LOW); 
+
+  //buzzer pin setup.
+  
+}
+
+void loop() {
+  
+  //Declaring a new variable as an int.
+  int buttonState = digitalRead(Button_Pin);
+
+  if (buttonState == LOW) {
+    digitalWrite(Led_Pin, LOW);
+    Serial.println("Button pressed");
+    digitalWrite(buzzer, LOW);
+    beep(200, 1000);
+    delay(200);
+    noTone(buzzer);
+    //Evil robot awakens!
+    greetings();
+    delay(1000);
+    analaysing();
+    delay(500);
+    intruder();
+    delay(500);
+    attack();
+    RUNN(500);  
+
+
+
+  } else {
+    digitalWrite(Led_Pin, HIGH);
+    Serial.println("Button not pressed.");
+    digitalWrite(buzzer, LOW);
+    beep(0,0);
+  }
+
+}
+
