@@ -1,9 +1,10 @@
+//---------------------------------------------------Library connection section-------------------------------------
 #include <Arduino.h>
-#include <wire.h>
+#include <Wire.h>
 #include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+#include <Adafruit_SSD1327.h>
 
-
+//------------------------------------------------defining the buttons and sensors-------------------------------------
 #define Led_Pin 35
 #define Button_Pin 14
 #define buzzer 37
@@ -13,8 +14,10 @@
 #define SCL_PIN 18  
 
 // creates an OLED display object using the I2C Wire connection.
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
+Adafruit_SSD1327 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
 
+
+//--------------------------------------------------My function for somplified code------------------------------------------------
 //function for beep
 void beep(int onPress, int pitch) {
   tone(buzzer, pitch);
@@ -22,7 +25,7 @@ void beep(int onPress, int pitch) {
 }
 
 void RUNN(int startTimer) {
-  for (int beep = 0; beep < 20; beep++) {
+  for (int i = 0; i < 20; i++) {
     tone(buzzer, 500);
     delay(startTimer);
 
@@ -51,45 +54,54 @@ void timesUp() {
   delay(200);
   noTone(buzzer);
 
-
-
 }
 
 void greetings() {
+  display.clearDisplay();
   display.setCursor(0,0);
   display.print("Hello!");
   display.println("+-+-+-+-+");
-  display.clearDisplay();
+  display.display();
 }
 
 void analaysing() {
+  display.clearDisplay();
   display.setCursor(0,0);
   display.print("*analysing face(s)*");
+  display.display();
   delay(2000);
-  display.clearDisplay();
 }
 
 void intruder() {
+  display.clearDisplay();
   display.setCursor(0,0);
   display.print(".......");
   display.println("You're not my creator...");
-  display.clearDisplay();
+  display.display();
 }
+
 void attack() {
+  display.clearDisplay();
   display.setCursor(0,0);
   display.print("PREPARE TO DIE!");
   display.println("Self Destruction.");
-  display.clearDisplay();
+  display.display();
 }
 
+//--------------------------------------SETUP FUNCTION------------------------------------------------------
 void setup() {
   //declareing system begin
   Serial.begin(115200);
   // Starts I2C communication using the selection SDA and SCL pins.
   Wire.begin(SDA_PIN,  SCL_PIN);
-//--------------OLED Display part Begin----------------------- 
+
+//-------------------------------------OLED Display part Begin---------------------------------------- 
   //starts the OLED display.
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  if (!display.begin(0x3C, true)) { 
+    Serial.println("SSD1327 OLED allocation failed! Check wiring/address.");
+  } else {
+    Serial.println("OLED Initialized Successfully!");
+  }
 
   //connecting LED and Button
   pinMode(Led_Pin, OUTPUT); 
@@ -97,14 +109,13 @@ void setup() {
   pinMode(buzzer, OUTPUT);
 
   display.clearDisplay(); //clears anything and everything stored in the buffer.
-  display.setTextColor(SSD1306_WHITE); //Sets text colour to white.
+  display.setTextColor(SSD1327_WHITE); //Sets text colour to white.
   display.setTextSize(1);  //Set the text size to 1 which is the smallest standard.
 
   display.display();
 
-//----------------OLED Display part END-----------------------
+//-----------------------------------OLED Display part END-------------------------------------
   //beginning lights as off.
-  digitalWrite(Led_Pin, LOW); 
 
   //buzzer pin setup.
   
@@ -116,30 +127,33 @@ void loop() {
   int buttonState = digitalRead(Button_Pin);
 
   if (buttonState == LOW) {
-    digitalWrite(Led_Pin, LOW);
+    digitalWrite(Led_Pin, HIGH);
     Serial.println("Button pressed");
-    digitalWrite(buzzer, LOW);
+
     beep(200, 1000);
-    delay(200);
     noTone(buzzer);
+    delay(200);
     //Evil robot awakens!
     greetings();
     delay(1000);
+
     analaysing();
-    delay(500);
+    delay(1000);
+
     intruder();
-    delay(500);
+    delay(1000);
+
     attack();
-    RUNN(500);  
+    RUNN(500);
+    timesUp();
 
 
 
   } else {
-    digitalWrite(Led_Pin, HIGH);
-    Serial.println("Button not pressed.");
+    digitalWrite(Led_Pin, LOW);
     digitalWrite(buzzer, LOW);
-    beep(0,0);
+
   }
+  
 
 }
-
